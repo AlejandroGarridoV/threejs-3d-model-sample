@@ -69,6 +69,38 @@ loader.load('scene.gltf', (gltf) => {
   console.error(error);
 });
 
+// Starfield
+const starGeometry = new THREE.BufferGeometry();
+const starCount = 10000;
+const starVertices = new Float32Array(starCount * 3);
+
+for (let i = 0; i < starCount; i++) {
+  const x = (Math.random() - 0.5) * 2000;
+  const y = (Math.random() - 0.5) * 2000;
+  const z = (Math.random() - 0.5) * 2000;
+  starVertices[i * 3] = x;
+  starVertices[i * 3 + 1] = y;
+  starVertices[i * 3 + 2] = z;
+}
+
+starGeometry.setAttribute('position', new THREE.BufferAttribute(starVertices, 3));
+
+const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+const starField = new THREE.Points(starGeometry, starMaterial);
+
+scene.add(starField);
+
+function updateStarField() {
+  const positions = starField.geometry.attributes.position.array;
+  for (let i = 0; i < starCount; i++) {
+    positions[i * 3 + 2] += 1; // Move stars towards the camera
+    if (positions[i * 3 + 2] > 1000) {
+      positions[i * 3 + 2] = -1000;
+    }
+  }
+  starField.geometry.attributes.position.needsUpdate = true;
+}
+
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -77,6 +109,7 @@ window.addEventListener('resize', () => {
 
 function animate() {
   requestAnimationFrame(animate);
+  updateStarField();
   controls.update();
   renderer.render(scene, camera);
 }
